@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Company Office Network</title>
+    <title>Global Company Office Network Map</title>
     
-    <!-- Leaflet Map Library -->
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    
+    <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     
-    <!-- Leaflet Routing Machine for curved lines -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.js"></script>
-    
-    <!-- Leaflet Curved Lines -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.Path.Drag/1.1.0/leaflet.path.drag.min.js"></script>
+    <!-- Leaflet Curve for curved lines -->
     <script src="https://unpkg.com/leaflet-curve@0.1.0/dist/leaflet-curve.umd.js"></script>
     
     <style>
@@ -24,102 +21,89 @@
             box-sizing: border-box;
         }
 
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
             background: #f8f9fa;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
             min-height: 100vh;
         }
 
         .header {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
-            padding: 30px 20px;
+            padding: 25px 20px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
 
         .header h1 {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
+            margin-bottom: 8px;
+            letter-spacing: 1.5px;
         }
 
         .header p {
-            font-size: 1.1rem;
-            opacity: 0.95;
+            font-size: 1rem;
+            opacity: 0.9;
             font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        .map-container-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #f8f9fa;
         }
 
         .map-wrapper {
             width: 100%;
+            max-width: 1920px;
             aspect-ratio: 16 / 9;
             background: white;
             position: relative;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         #map {
             width: 100%;
             height: 100%;
-            background: linear-gradient(180deg, #e8f4f8 0%, #ffffff 100%);
         }
 
-        .leaflet-control-zoom {
-            display: none !important;
-        }
-
-        .location-popup {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .location-popup .location-title {
-            font-weight: 700;
-            color: #1e3c72;
-            margin-bottom: 8px;
-            font-size: 1rem;
-        }
-
-        .location-popup .location-address {
-            font-size: 0.85rem;
-            color: #555;
-            line-height: 1.6;
-            margin-bottom: 8px;
-        }
-
-        .location-popup .location-type {
-            display: inline-block;
-            background: #e63946;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .location-popup .location-type.secondary {
-            background: #ffba00;
-            color: #000;
+        .leaflet-container {
+            background: linear-gradient(180deg, #e3f2fd 0%, #ffffff 50%, #f5f5f5 100%);
         }
 
         .legend {
             position: absolute;
-            top: 30px;
-            right: 30px;
-            background: rgba(255, 255, 255, 0.98);
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             z-index: 1000;
             max-width: 280px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(200, 200, 200, 0.3);
         }
 
         .legend-title {
             font-weight: 700;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: #1e3c72;
             margin-bottom: 15px;
             text-transform: uppercase;
@@ -139,71 +123,131 @@
         }
 
         .legend-marker {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            margin-right: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            color: white;
-            font-size: 0.7rem;
+            border: 3px solid white;
+            margin-right: 10px;
             flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .legend-marker.primary {
             background: #e63946;
-            box-shadow: 0 0 12px rgba(230, 57, 70, 0.5);
         }
 
         .legend-marker.secondary {
             background: #ffba00;
-            color: #000;
-            box-shadow: 0 0 10px rgba(255, 186, 0, 0.4);
         }
 
         .legend-line {
-            width: 30px;
+            width: 25px;
             height: 2px;
             background: linear-gradient(90deg, #ff9500, rgba(255, 149, 0, 0.3));
-            margin-right: 12px;
+            margin-right: 10px;
             flex-shrink: 0;
         }
 
         .info-panel {
             position: absolute;
-            bottom: 30px;
-            left: 30px;
-            background: rgba(255, 255, 255, 0.98);
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             z-index: 1000;
             max-width: 350px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(200, 200, 200, 0.3);
         }
 
         .info-panel h3 {
             color: #1e3c72;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             margin-bottom: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 700;
         }
 
         .info-panel p {
             font-size: 0.85rem;
-            color: #666;
+            color: #555;
             line-height: 1.6;
             margin-bottom: 8px;
         }
 
-        /* Responsive Design */
-        @media (max-width: 1200px) {
+        .info-panel p:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-panel strong {
+            color: #1e3c72;
+            font-weight: 600;
+        }
+
+        /* Custom Popup Styling */
+        .leaflet-popup-content-wrapper {
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+            padding: 12px;
+            font-size: 0.9rem;
+        }
+
+        .location-popup-title {
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .location-popup-address {
+            color: #555;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            white-space: pre-line;
+        }
+
+        .location-popup-type {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .location-popup-type.primary {
+            background: #e63946;
+            color: white;
+        }
+
+        .location-popup-type.secondary {
+            background: #ffba00;
+            color: #000;
+        }
+
+        .leaflet-popup-close-button {
+            padding: 4px 8px;
+            font-size: 18px;
+        }
+
+        /* Disable zoom controls */
+        .leaflet-control-zoom {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
             .header h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
 
             .legend {
@@ -222,47 +266,24 @@
             }
 
             .header h1 {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
             }
 
             .header p {
-                font-size: 0.95rem;
-            }
-
-            .legend {
-                top: 20px;
-                right: 20px;
-                max-width: 220px;
-            }
-
-            .info-panel {
-                bottom: 20px;
-                left: 20px;
-                max-width: 280px;
-                padding: 18px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .map-wrapper {
-                aspect-ratio: 1 / 1;
-            }
-
-            .header h1 {
-                font-size: 1.2rem;
+                font-size: 0.9rem;
             }
 
             .legend {
                 top: 15px;
                 right: 15px;
-                max-width: 200px;
+                max-width: 220px;
                 padding: 15px;
             }
 
             .info-panel {
                 bottom: 15px;
                 left: 15px;
-                max-width: calc(100% - 30px);
+                max-width: 280px;
                 padding: 15px;
             }
 
@@ -273,257 +294,277 @@
 
             .legend-item,
             .info-panel p {
-                font-size: 0.75rem;
+                font-size: 0.8rem;
             }
         }
 
-        .leaflet-popup-content {
-            margin: 0;
-            padding: 0;
-        }
+        @media (max-width: 480px) {
+            .map-wrapper {
+                aspect-ratio: 1 / 1;
+                margin: 10px;
+            }
 
-        .leaflet-popup-close-button {
-            padding: 5px;
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.1rem;
+            }
+
+            .header p {
+                font-size: 0.8rem;
+            }
+
+            .legend {
+                top: 10px;
+                right: 10px;
+                max-width: 200px;
+                padding: 12px;
+            }
+
+            .info-panel {
+                bottom: 10px;
+                left: 10px;
+                max-width: calc(100% - 20px);
+                padding: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>GLOBAL COMPANY OFFICE NETWORK</h1>
-        <p>Strategic Business Locations Worldwide</p>
-    </div>
-
-    <div class="map-wrapper">
-        <div id="map"></div>
-        
-        <div class="legend">
-            <div class="legend-title">Office Type</div>
-            <div class="legend-item">
-                <div class="legend-marker primary">●</div>
-                <span>Primary Hub</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-marker secondary">●</div>
-                <span>Regional Office</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-line"></div>
-                <span>Connection Routes</span>
-            </div>
+    <div class="page-container">
+        <div class="header">
+            <h1>GLOBAL COMPANY OFFICE NETWORK</h1>
+            <p>Strategic Business Locations Worldwide</p>
         </div>
 
-        <div class="info-panel">
-            <h3>📍 Total Locations</h3>
-            <p><strong>8 Offices</strong> across 3 continents</p>
-            <p><strong>Primary Hubs:</strong> Morocco & Egypt</p>
-            <p><strong>Regional:</strong> Europe & North Africa</p>
+        <div class="map-container-wrapper">
+            <div class="map-wrapper">
+                <div id="map"></div>
+                
+                <div class="legend">
+                    <div class="legend-title">Office Locations</div>
+                    <div class="legend-item">
+                        <div class="legend-marker primary"></div>
+                        <span>Primary Hub</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-marker secondary"></div>
+                        <span>Regional Office</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line"></div>
+                        <span>Connection Routes</span>
+                    </div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>📍 Network Summary</h3>
+                    <p><strong>8 Global Offices</strong></p>
+                    <p><strong>2 Primary Hubs:</strong> Morocco & Egypt</p>
+                    <p><strong>6 Regional Offices:</strong> Europe & North Africa</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Map configuration
+        // Initialize map
         const map = L.map('map', {
             center: [25, 10],
             zoom: 3.5,
             dragging: true,
-            scrollWheelZoom: true,
+            scrollWheelZoom: false,
             zoomControl: false,
-            attributionControl: false
+            attributionControl: false,
+            preferCanvas: true
         });
 
-        // Add tile layer
+        // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap',
             maxZoom: 19,
-            opacity: 0.8
+            minZoom: 2
         }).addTo(map);
 
-        // All locations
+        // Location data
         const locations = {
             primary: [
                 {
                     name: 'Casablanca, Morocco',
-                    address: '410 Blvd. Zerktouni Res. Hamad, Appt. N1/C\nCasablanca, Morocco',
+                    address: '410 Blvd. Zerktouni Res. Hamad,\nAppt. N1/C, Casablanca, Morocco',
                     lat: 33.5731,
                     lng: -7.5898,
-                    type: 'Primary Hub',
-                    color: '#e63946'
+                    type: 'PRIMARY HUB'
                 },
                 {
                     name: 'Cairo, Egypt',
-                    address: '66 Hammouda Mahmoud Madinat Nasr\nCairo, Egypt',
+                    address: '66 Hammouda Mahmoud Madinat Nasr,\nCairo, Egypt',
                     lat: 30.0444,
                     lng: 31.2357,
-                    type: 'Primary Hub',
-                    color: '#e63946'
+                    type: 'PRIMARY HUB'
                 }
             ],
             secondary: [
                 {
                     name: 'Rabat, Morocco',
-                    address: 'Regional Office\nRabat, Morocco',
+                    address: 'Regional Office,\nRabat, Morocco',
                     lat: 34.0209,
                     lng: -6.8416,
-                    type: 'Regional Office',
-                    color: '#ffba00'
+                    type: 'REGIONAL OFFICE'
                 },
                 {
                     name: 'Marrakech, Morocco',
-                    address: 'Regional Office\nMarrakech, Morocco',
+                    address: 'Regional Office,\nMarrakech, Morocco',
                     lat: 31.6295,
                     lng: -8.0096,
-                    type: 'Regional Office',
-                    color: '#ffba00'
+                    type: 'REGIONAL OFFICE'
                 },
                 {
                     name: 'Alexandria, Egypt',
-                    address: 'Regional Office\nAlexandria, Egypt',
+                    address: 'Regional Office,\nAlexandria, Egypt',
                     lat: 31.2001,
                     lng: 29.9187,
-                    type: 'Regional Office',
-                    color: '#ffba00'
+                    type: 'REGIONAL OFFICE'
                 },
                 {
                     name: 'Rotterdam, Netherlands',
-                    address: 'Albert Plesmanweg 57A\n3088 GB Rotterdam, The Netherlands',
+                    address: 'Albert Plesmanweg 57A,\n3088 GB Rotterdam, Netherlands',
                     lat: 51.9225,
                     lng: 4.2747,
-                    type: 'Regional Office',
-                    color: '#ffba00'
+                    type: 'REGIONAL OFFICE'
                 },
                 {
                     name: 'Barcelona, Spain',
-                    address: 'C/ Sardenya 49\n08005 Barcelona, España',
+                    address: 'C/ Sardenya 49,\n08005 Barcelona, España',
                     lat: 41.3851,
                     lng: 2.1734,
-                    type: 'Regional Office',
-                    color: '#ffba00'
+                    type: 'REGIONAL OFFICE'
                 },
                 {
                     name: 'London, United Kingdom',
-                    address: '31 Homerton Rd\nLondon E9 5QB, UK',
+                    address: '31 Homerton Rd,\nLondon E9 5QB, UK',
                     lat: 51.5574,
                     lng: -0.0757,
-                    type: 'Regional Office',
-                    color: '#ffba00'
+                    type: 'REGIONAL OFFICE'
                 },
                 {
                     name: 'Leicester, United Kingdom',
-                    address: 'Welland Rd\nOakham LE15 8JE, UK',
+                    address: 'Welland Rd,\nOakham LE15 8JE, UK',
                     lat: 52.6369,
                     lng: -1.1405,
-                    type: 'Regional Office',
-                    color: '#ffba00'
+                    type: 'REGIONAL OFFICE'
                 },
                 {
                     name: 'Tallinn, Estonia',
-                    address: 'Sakala tn 7-2\n10141 Tallinn, Estonia',
+                    address: 'Sakala tn 7-2,\n10141 Tallinn, Estonia',
                     lat: 59.4370,
                     lng: 24.7536,
-                    type: 'Regional Office',
-                    color: '#ffba00'
+                    type: 'REGIONAL OFFICE'
                 }
             ]
         };
 
-        // Create custom icons
-        function createCustomIcon(isPrimary) {
+        // Create custom icon
+        function createIcon(isPrimary) {
             return L.divIcon({
-                html: `<div style="
-                    width: 30px;
-                    height: 30px;
-                    background: ${isPrimary ? '#e63946' : '#ffba00'};
-                    border: 3px solid white;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: bold;
-                    color: white;
-                    font-size: 14px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                    cursor: pointer;
-                ">
-                    ${isPrimary ? '●' : '●'}
-                </div>`,
-                iconSize: [30, 30],
+                html: `
+                    <div style="
+                        width: 32px;
+                        height: 32px;
+                        background: ${isPrimary ? '#e63946' : '#ffba00'};
+                        border: 3px solid white;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 16px;
+                        font-weight: bold;
+                        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+                        cursor: pointer;
+                    ">
+                        ●
+                    </div>
+                `,
+                iconSize: [32, 32],
                 className: 'custom-icon'
             });
         }
 
-        // Function to create popup content
-        function createPopupContent(location) {
+        // Create popup
+        function createPopup(location) {
             return `
-                <div class="location-popup" style="width: 280px; padding: 12px;">
-                    <div class="location-title">${location.name}</div>
-                    <div class="location-address">${location.address}</div>
-                    <span class="location-type ${location.type === 'Regional Office' ? 'secondary' : ''}">
+                <div style="width: 280px;">
+                    <div class="location-popup-title">${location.name}</div>
+                    <div class="location-popup-address">${location.address}</div>
+                    <span class="location-popup-type ${location.type === 'PRIMARY HUB' ? 'primary' : 'secondary'}">
                         ${location.type}
                     </span>
                 </div>
             `;
         }
 
-        // Add primary locations
+        // Add primary hub markers
         locations.primary.forEach(location => {
             const marker = L.marker([location.lat, location.lng], {
-                icon: createCustomIcon(true)
+                icon: createIcon(true),
+                title: location.name
             }).addTo(map);
 
-            marker.bindPopup(createPopupContent(location), {
+            marker.bindPopup(createPopup(location), {
                 maxWidth: 300,
-                className: 'custom-popup'
+                minWidth: 250
             });
 
-            marker.on('mouseover', function() {
-                this.openPopup();
-            });
-
-            marker.on('mouseout', function() {
-                this.closePopup();
-            });
+            marker.on('mouseover', function() { this.openPopup(); });
+            marker.on('mouseout', function() { this.closePopup(); });
         });
 
-        // Add secondary locations
+        // Add secondary office markers
         locations.secondary.forEach(location => {
             const marker = L.marker([location.lat, location.lng], {
-                icon: createCustomIcon(false)
+                icon: createIcon(false),
+                title: location.name
             }).addTo(map);
 
-            marker.bindPopup(createPopupContent(location), {
+            marker.bindPopup(createPopup(location), {
                 maxWidth: 300,
-                className: 'custom-popup'
+                minWidth: 250
             });
 
-            marker.on('mouseover', function() {
-                this.openPopup();
-            });
-
-            marker.on('mouseout', function() {
-                this.closePopup();
-            });
+            marker.on('mouseover', function() { this.openPopup(); });
+            marker.on('mouseout', function() { this.closePopup(); });
         });
 
-        // Draw curved lines from primary hubs to all secondary offices
-        const primaryHubs = locations.primary;
-        const secondaryOffices = locations.secondary;
-
-        primaryHubs.forEach(hub => {
-            secondaryOffices.forEach(office => {
-                const curve = L.curve([
-                    [hub.lat, hub.lng],
-                    [office.lat, office.lng]
-                ], {
-                    color: '#ff9500',
-                    weight: 2.5,
-                    opacity: 0.5,
-                    dashArray: '5, 5',
-                    lineCap: 'round'
-                }).addTo(map);
-            });
+        // Draw connection lines
+        // From Casablanca
+        locations.secondary.forEach(office => {
+            L.curve([
+                [33.5731, -7.5898],
+                [office.lat, office.lng]
+            ], {
+                color: '#ff9500',
+                weight: 2.5,
+                opacity: 0.5,
+                dashArray: '5, 5'
+            }).addTo(map);
         });
 
-        // Draw line between primary hubs
+        // From Cairo
+        locations.secondary.forEach(office => {
+            L.curve([
+                [30.0444, 31.2357],
+                [office.lat, office.lng]
+            ], {
+                color: '#ff9500',
+                weight: 2.5,
+                opacity: 0.5,
+                dashArray: '5, 5'
+            }).addTo(map);
+        });
+
+        // Between primary hubs
         L.curve([
             [33.5731, -7.5898],
             [30.0444, 31.2357]
@@ -531,17 +572,15 @@
             color: '#ff9500',
             weight: 2.5,
             opacity: 0.5,
-            dashArray: '5, 5',
-            lineCap: 'round'
+            dashArray: '5, 5'
         }).addTo(map);
 
-        // Fit bounds to show all markers
-        const allLatLngs = [
+        // Auto fit map bounds
+        const bounds = L.latLngBounds([
             ...locations.primary.map(l => [l.lat, l.lng]),
             ...locations.secondary.map(l => [l.lat, l.lng])
-        ];
-        const bounds = L.latLngBounds(allLatLngs);
-        map.fitBounds(bounds, { padding: [100, 100] });
+        ]);
+        map.fitBounds(bounds, { padding: [80, 80], maxZoom: 4 });
     </script>
 </body>
 </html>
