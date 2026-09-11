@@ -88,22 +88,41 @@
             background: linear-gradient(180deg, #e3f2fd 0%, #ffffff 50%, #f5f5f5 100%);
         }
 
+        /* Hide map labels */
+        .leaflet-tile-pane {
+            filter: grayscale(15%);
+        }
+
+        /* Custom label styling */
+        .location-label {
+            background: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #1e3c72;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            border: 2px solid #1e3c72;
+            white-space: nowrap;
+            z-index: 999;
+        }
+
         .legend {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.97);
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             z-index: 1000;
             max-width: 300px;
-            border: 1px solid rgba(200, 200, 200, 0.3);
+            border: 2px solid #1e3c72;
         }
 
         .legend-title {
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #1e3c72;
             margin-bottom: 15px;
             text-transform: uppercase;
@@ -146,28 +165,29 @@
 
         .legend-line {
             width: 25px;
-            height: 2px;
-            background: linear-gradient(90deg, #ff9500, rgba(255, 149, 0, 0.3));
+            height: 3px;
+            background: linear-gradient(90deg, #e63946, #ff9500);
             margin-right: 10px;
             flex-shrink: 0;
+            border-radius: 2px;
         }
 
         .info-panel {
             position: absolute;
             bottom: 20px;
             left: 20px;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.97);
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             z-index: 1000;
             max-width: 350px;
-            border: 1px solid rgba(200, 200, 200, 0.3);
+            border: 2px solid #1e3c72;
         }
 
         .info-panel h3 {
             color: #1e3c72;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             margin-bottom: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -188,6 +208,11 @@
         .info-panel strong {
             color: #1e3c72;
             font-weight: 600;
+        }
+
+        /* Hide OSM attribution */
+        .leaflet-control-attribution {
+            display: none !important;
         }
 
         /* Responsive */
@@ -212,6 +237,11 @@
                 left: 15px;
                 max-width: 280px;
                 padding: 15px;
+            }
+
+            .location-label {
+                font-size: 0.75rem;
+                padding: 4px 8px;
             }
         }
 
@@ -268,7 +298,7 @@
                     </div>
                     <div class="legend-item">
                         <div class="legend-line"></div>
-                        <span>Connection Routes</span>
+                        <span>Network Routes</span>
                     </div>
                 </div>
 
@@ -295,24 +325,27 @@
             preferCanvas: true
         });
 
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Add styled OpenStreetMap tiles (no labels)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
             maxZoom: 19,
-            minZoom: 2
+            minZoom: 2,
+            attribution: ''
         }).addTo(map);
 
         // Location data
         const locations = {
             primary: [
                 {
-                    name: 'Casablanca, Morocco',
+                    name: 'Casablanca',
+                    country: 'Morocco',
                     address: '410 Blvd. Zerktouni Res. Hamad,\nAppt. N1/C, Casablanca, Morocco',
                     lat: 33.5731,
                     lng: -7.5898,
                     type: 'PRIMARY HUB'
                 },
                 {
-                    name: 'Cairo, Egypt',
+                    name: 'Cairo',
+                    country: 'Egypt',
                     address: '66 Hammouda Mahmoud Madinat Nasr,\nCairo, Egypt',
                     lat: 30.0444,
                     lng: 31.2357,
@@ -321,57 +354,65 @@
             ],
             secondary: [
                 {
-                    name: 'Rabat, Morocco',
-                    address: 'Regional Office,\nRabat, Morocco',
+                    name: 'Rabat',
+                    country: 'Morocco',
+                    address: 'Regional Office, Rabat, Morocco',
                     lat: 34.0209,
                     lng: -6.8416,
                     type: 'REGIONAL OFFICE'
                 },
                 {
-                    name: 'Marrakech, Morocco',
-                    address: 'Regional Office,\nMarrakech, Morocco',
+                    name: 'Marrakech',
+                    country: 'Morocco',
+                    address: 'Regional Office, Marrakech, Morocco',
                     lat: 31.6295,
                     lng: -8.0096,
                     type: 'REGIONAL OFFICE'
                 },
                 {
-                    name: 'Alexandria, Egypt',
-                    address: 'Regional Office,\nAlexandria, Egypt',
+                    name: 'Alexandria',
+                    country: 'Egypt',
+                    address: 'Regional Office, Alexandria, Egypt',
                     lat: 31.2001,
                     lng: 29.9187,
                     type: 'REGIONAL OFFICE'
                 },
                 {
-                    name: 'Rotterdam, Netherlands',
-                    address: 'Albert Plesmanweg 57A,\n3088 GB Rotterdam, Netherlands',
+                    name: 'Rotterdam',
+                    country: 'Netherlands',
+                    address: 'Albert Plesmanweg 57A, 3088 GB Rotterdam, Netherlands',
                     lat: 51.9225,
                     lng: 4.2747,
                     type: 'REGIONAL OFFICE'
                 },
                 {
-                    name: 'Barcelona, Spain',
-                    address: 'C/ Sardenya 49,\n08005 Barcelona, España',
+                    name: 'Barcelona',
+                    country: 'Spain',
+                    address: 'C/ Sardenya 49, 08005 Barcelona, España',
                     lat: 41.3851,
                     lng: 2.1734,
                     type: 'REGIONAL OFFICE'
                 },
                 {
-                    name: 'London, United Kingdom',
-                    address: '31 Homerton Rd,\nLondon E9 5QB, UK',
+                    name: 'London',
+                    country: 'United Kingdom',
+                    address: '31 Homerton Rd, London E9 5QB, UK',
                     lat: 51.5574,
                     lng: -0.0757,
                     type: 'REGIONAL OFFICE'
                 },
                 {
-                    name: 'Leicester, United Kingdom',
-                    address: 'Welland Rd,\nOakham LE15 8JE, UK',
+                    name: 'Leicester',
+                    country: 'United Kingdom',
+                    address: 'Welland Rd, Oakham LE15 8JE, UK',
                     lat: 52.6369,
                     lng: -1.1405,
                     type: 'REGIONAL OFFICE'
                 },
                 {
-                    name: 'Tallinn, Estonia',
-                    address: 'Sakala tn 7-2,\n10141 Tallinn, Estonia',
+                    name: 'Tallinn',
+                    country: 'Estonia',
+                    address: 'Sakala tn 7-2, 10141 Tallinn, Estonia',
                     lat: 59.4370,
                     lng: 24.7536,
                     type: 'REGIONAL OFFICE'
@@ -379,8 +420,9 @@
             ],
             comingsoon: [
                 {
-                    name: 'New York City, USA',
-                    address: 'Coming Soon\nNew York City, USA',
+                    name: 'New York City',
+                    country: 'USA',
+                    address: 'Coming Soon, New York City, USA',
                     lat: 40.7128,
                     lng: -74.0060,
                     type: 'COMING SOON'
@@ -390,31 +432,31 @@
 
         // Create custom icon
         function createIcon(type) {
-            let bgColor = '#e63946'; // primary
+            let bgColor = '#e63946';
             if (type === 'REGIONAL OFFICE') bgColor = '#ffba00';
             if (type === 'COMING SOON') bgColor = '#a0a0a0';
 
             return L.divIcon({
                 html: `
                     <div style="
-                        width: 32px;
-                        height: 32px;
+                        width: 36px;
+                        height: 36px;
                         background: ${bgColor};
-                        border: 3px solid white;
+                        border: 4px solid white;
                         border-radius: 50%;
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         color: white;
-                        font-size: 16px;
+                        font-size: 18px;
                         font-weight: bold;
-                        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
                         cursor: pointer;
                     ">
                         ●
                     </div>
                 `,
-                iconSize: [32, 32],
+                iconSize: [36, 36],
                 className: 'custom-icon'
             });
         }
@@ -423,11 +465,12 @@
         function createPopup(location) {
             return `
                 <div style="width: 280px;">
-                    <div style="font-weight: 700; color: #1e3c72; margin-bottom: 8px; font-size: 0.95rem;">${location.name}</div>
+                    <div style="font-weight: 700; color: #1e3c72; margin-bottom: 6px; font-size: 1rem;">${location.name}</div>
+                    <div style="font-size: 0.9rem; color: #666; margin-bottom: 8px;">${location.country}</div>
                     <div style="color: #555; font-size: 0.8rem; line-height: 1.5; margin-bottom: 10px; white-space: pre-line;">${location.address}</div>
                     <span style="
                         display: inline-block;
-                        padding: 4px 10px;
+                        padding: 5px 12px;
                         border-radius: 4px;
                         font-size: 0.7rem;
                         font-weight: 600;
@@ -444,11 +487,20 @@
         // Combine all locations
         const allLocations = [...locations.primary, ...locations.secondary, ...locations.comingsoon];
         
-        // Add all markers
+        // Add all markers and location labels
         allLocations.forEach(location => {
             const marker = L.marker([location.lat, location.lng], {
                 icon: createIcon(location.type),
                 title: location.name
+            }).addTo(map);
+
+            // Add text label next to marker
+            const label = L.marker([location.lat, location.lng], {
+                icon: L.divIcon({
+                    html: `<div class="location-label">${location.name}</div>`,
+                    iconSize: [auto, auto],
+                    className: 'location-label-container'
+                })
             }).addTo(map);
 
             marker.bindPopup(createPopup(location), {
@@ -460,81 +512,95 @@
             marker.on('mouseout', function() { this.closePopup(); });
         });
 
-        // Draw curved lines connecting ALL locations to each other
-        // Connect all primary hubs to all secondary offices
-        locations.primary.forEach(primary => {
-            locations.secondary.forEach(secondary => {
-                L.curve([
-                    [primary.lat, primary.lng],
-                    [secondary.lat, secondary.lng]
-                ], {
-                    color: '#ff9500',
-                    weight: 2.5,
-                    opacity: 0.5,
-                    dashArray: '5, 5'
-                }).addTo(map);
+        // Draw smooth curved connection lines between ALL locations
+        function drawConnections() {
+            // Primary to Secondary
+            locations.primary.forEach(primary => {
+                locations.secondary.forEach(secondary => {
+                    L.curve([
+                        [primary.lat, primary.lng],
+                        [secondary.lat, secondary.lng]
+                    ], {
+                        color: '#e63946',
+                        weight: 3,
+                        opacity: 0.6,
+                        dashArray: '8, 5',
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    }).addTo(map);
+                });
+
+                // Primary to Coming Soon
+                locations.comingsoon.forEach(comingSoon => {
+                    L.curve([
+                        [primary.lat, primary.lng],
+                        [comingSoon.lat, comingSoon.lng]
+                    ], {
+                        color: '#e63946',
+                        weight: 3,
+                        opacity: 0.6,
+                        dashArray: '8, 5',
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    }).addTo(map);
+                });
             });
 
-            // Connect primary hubs to coming soon
-            locations.comingsoon.forEach(comingSoon => {
-                L.curve([
-                    [primary.lat, primary.lng],
-                    [comingSoon.lat, comingSoon.lng]
-                ], {
-                    color: '#ff9500',
-                    weight: 2.5,
-                    opacity: 0.5,
-                    dashArray: '5, 5'
-                }).addTo(map);
-            });
-        });
-
-        // Connect all secondary offices to each other
-        for (let i = 0; i < locations.secondary.length; i++) {
-            for (let j = i + 1; j < locations.secondary.length; j++) {
-                L.curve([
-                    [locations.secondary[i].lat, locations.secondary[i].lng],
-                    [locations.secondary[j].lat, locations.secondary[j].lng]
-                ], {
-                    color: '#ff9500',
-                    weight: 2,
-                    opacity: 0.3,
-                    dashArray: '5, 5'
-                }).addTo(map);
+            // Secondary to Secondary
+            for (let i = 0; i < locations.secondary.length; i++) {
+                for (let j = i + 1; j < locations.secondary.length; j++) {
+                    L.curve([
+                        [locations.secondary[i].lat, locations.secondary[i].lng],
+                        [locations.secondary[j].lat, locations.secondary[j].lng]
+                    ], {
+                        color: '#ff9500',
+                        weight: 2.5,
+                        opacity: 0.4,
+                        dashArray: '6, 4',
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    }).addTo(map);
+                }
             }
+
+            // Secondary to Coming Soon
+            locations.secondary.forEach(secondary => {
+                locations.comingsoon.forEach(comingSoon => {
+                    L.curve([
+                        [secondary.lat, secondary.lng],
+                        [comingSoon.lat, comingSoon.lng]
+                    ], {
+                        color: '#ff9500',
+                        weight: 2.5,
+                        opacity: 0.5,
+                        dashArray: '6, 4',
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    }).addTo(map);
+                });
+            });
+
+            // Primary hub to primary hub
+            L.curve([
+                [33.5731, -7.5898],
+                [30.0444, 31.2357]
+            ], {
+                color: '#e63946',
+                weight: 3.5,
+                opacity: 0.7,
+                dashArray: '8, 5',
+                lineCap: 'round',
+                lineJoin: 'round'
+            }).addTo(map);
         }
 
-        // Connect secondary offices to coming soon
-        locations.secondary.forEach(secondary => {
-            locations.comingsoon.forEach(comingSoon => {
-                L.curve([
-                    [secondary.lat, secondary.lng],
-                    [comingSoon.lat, comingSoon.lng]
-                ], {
-                    color: '#ff9500',
-                    weight: 2.5,
-                    opacity: 0.5,
-                    dashArray: '5, 5'
-                }).addTo(map);
-            });
-        });
+        drawConnections();
 
-        // Connect primary hubs to each other
-        L.curve([
-            [33.5731, -7.5898],
-            [30.0444, 31.2357]
-        ], {
-            color: '#ff9500',
-            weight: 2.5,
-            opacity: 0.5,
-            dashArray: '5, 5'
-        }).addTo(map);
-
-        // Auto fit map bounds
+        // Auto fit map bounds with padding
         const bounds = L.latLngBounds(
             allLocations.map(l => [l.lat, l.lng])
         );
-        map.fitBounds(bounds, { padding: [100, 100], maxZoom: 3 });
+        map.fitBounds(bounds, { padding: [120, 120], maxZoom: 3 });
     </script>
 </body>
 </html>
