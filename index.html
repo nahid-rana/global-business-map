@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Business Map - Worldwide Office Locations</title>
+    
+    <!-- amCharts Resources -->
+    <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1920px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .map-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        #chartdiv {
+            width: 100%;
+            height: 100%;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+        }
+
+        .legend-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            color: #1e3c72;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: #333;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .dot-primary {
+            background-color: #e63946;
+            box-shadow: 0 0 10px rgba(230, 57, 70, 0.5);
+        }
+
+        .dot-secondary {
+            background-color: #ffba00;
+            box-shadow: 0 0 8px rgba(255, 186, 0, 0.4);
+        }
+
+        .dot-connection {
+            background-color: #ff9500;
+            height: 2px;
+            width: 12px;
+        }
+
+        .info-panel {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            max-width: 280px;
+            backdrop-filter: blur(10px);
+        }
+
+        .info-panel-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            color: #1e3c72;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .location-count {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #e63946;
+            margin-bottom: 8px;
+        }
+
+        .location-text {
+            font-size: 0.85rem;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .legend {
+                bottom: 20px;
+                left: 20px;
+                max-width: 260px;
+            }
+
+            .info-panel {
+                top: 20px;
+                right: 20px;
+                max-width: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header p {
+                font-size: 0.95rem;
+            }
+
+            .map-wrapper {
+                aspect-ratio: 4 / 3;
+                border-radius: 10px;
+            }
+
+            .legend {
+                bottom: 15px;
+                left: 15px;
+                padding: 15px;
+                max-width: 220px;
+            }
+
+            .info-panel {
+                top: 15px;
+                right: 15px;
+                padding: 15px;
+                max-width: 200px;
+            }
+
+            .legend-title,
+            .info-panel-title {
+                font-size: 0.85rem;
+            }
+
+            .location-count {
+                font-size: 1rem;
+            }
+
+            .legend-item,
+            .location-text {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                margin-bottom: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
+            }
+
+            .header p {
+                font-size: 0.85rem;
+            }
+
+            .map-wrapper {
+                aspect-ratio: 1 / 1;
+                border-radius: 8px;
+            }
+
+            .legend {
+                bottom: 10px;
+                left: 10px;
+                padding: 12px;
+                max-width: 180px;
+            }
+
+            .info-panel {
+                top: 10px;
+                right: 10px;
+                padding: 12px;
+                max-width: 160px;
+                display: none;
+            }
+
+            .legend-title,
+            .info-panel-title {
+                font-size: 0.75rem;
+            }
+
+            .location-count {
+                font-size: 0.9rem;
+            }
+
+            .legend-item,
+            .location-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 20;
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid rgba(30, 60, 114, 0.1);
+            border-top: 4px solid #1e3c72;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Global Business Network</h1>
+            <p>Strategic Office Locations Worldwide</p>
+        </div>
+
+        <div class="map-wrapper">
+            <div class="loading active">
+                <div class="spinner"></div>
+                <p>Loading Map...</p>
+            </div>
+            <div id="chartdiv"></div>
+            
+            <div class="legend">
+                <div class="legend-title">Legend</div>
+                <div class="legend-item">
+                    <div class="legend-dot dot-primary"></div>
+                    <span>Primary Hub (Morocco & Egypt)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot dot-secondary"></div>
+                    <span>Regional Office</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot dot-connection"></div>
+                    <span>Connection Routes</span>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-panel-title">Network Overview</div>
+                <div class="location-count">8 Locations</div>
+                <div class="location-text">
+                    Connected across 3 continents serving global markets
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for amCharts to be ready
+        am5.ready(function() {
+            // Hide loading spinner
+            document.querySelector('.loading').classList.remove('active');
+
+            // Create root element
+            var root = am5.Root.new("chartdiv");
+
+            // Apply theme
+            root.setThemes([
+                am5themes_Animated.new(root)
+            ]);
+
+            // Create map chart
+            var chart = root.container.children.push(am5map.MapChart.new(root, {
+                panX: "translateX",
+                panY: "translateY",
+                wheelX: "none",
+                wheelY: "none",
+                projection: am5map.geoMercator(),
+                maxZoomLevel: 5
+            }));
+
+            // Create polygon series for world map
+            var polygonSeries = chart.series.push(am5map.MapPolygonSeries.new(root, {
+                geoJSON: am5geodata_worldLow,
+                exclude: ["AQ"]
+            }));
+
+            polygonSeries.mapPolygons.template.setAll({
+                strokeOpacity: 0.5,
+                stroke: am5.color(0xcccccc),
+                fill: am5.color(0xf0f0f0)
+            });
+
+            polygonSeries.mapPolygons.template.events.on("pointerover", function(ev) {
+                ev.target.setAll({
+                    fill: am5.color(0xe8e8e8)
+                });
+            });
+
+            polygonSeries.mapPolygons.template.events.on("pointerout", function(ev) {
+                ev.target.setAll({
+                    fill: am5.color(0xf0f0f0)
+                });
+            });
+
+            // Create graticule (grid lines)
+            var graticuleSeries = chart.series.push(am5map.GraticuleSeries.new(root, {}));
+            graticuleSeries.mapLines.template.setAll({
+                stroke: root.interfaceColors.get("alternativeBackground"),
+                strokeOpacity: 0.08
+            });
+
+            // Create line series for connections
+            var lineSeries = chart.series.push(am5map.MapLineSeries.new(root, {}));
+            lineSeries.mapLines.template.setAll({
+                stroke: am5.color(0xff9500),
+                strokeWidth: 2,
+                strokeOpacity: 0.6,
+                strokeDasharray: [3, 3]
+            });
+
+            // Create point series for primary hubs (Morocco & Egypt)
+            var primarySeries = chart.series.push(am5map.MapPointSeries.new(root, {}));
+            primarySeries.bullets.push(function() {
+                var circle = am5.Circle.new(root, {
+                    radius: 8,
+                    tooltipText: "{title}",
+                    fill: am5.color(0xe63946),
+                    stroke: am5.color(0xffffff),
+                    strokeWidth: 3,
+                    tooltipY: 0,
+                    cursor: "pointer"
+                });
+
+                // Add glow effect
+                circle.events.on("pointerover", function() {
+                    circle.set("radius", 12);
+                });
+
+                circle.events.on("pointerout", function() {
+                    circle.set("radius", 8);
+                });
+
+                return am5.Bullet.new(root, {
+                    sprite: circle
+                });
+            });
+
+            // Create point series for secondary offices
+            var secondarySeries = chart.series.push(am5map.MapPointSeries.new(root, {}));
+            secondarySeries.bullets.push(function() {
+                var circle = am5.Circle.new(root, {
+                    radius: 6,
+                    tooltipText: "{title}",
+                    fill: am5.color(0xffba00),
+                    stroke: am5.color(0xffffff),
+                    strokeWidth: 2,
+                    tooltipY: 0,
+                    cursor: "pointer"
+                });
+
+                // Add glow effect
+                circle.events.on("pointerover", function() {
+                    circle.set("radius", 10);
+                });
+
+                circle.events.on("pointerout", function() {
+                    circle.set("radius", 6);
+                });
+
+                return am5.Bullet.new(root, {
+                    sprite: circle
+                });
+            });
+
+            // Primary locations (Morocco & Egypt - Main Hubs)
+            var primaryLocations = [
+                {
+                    id: "casablanca",
+                    title: "Casablanca, Morocco (HQ)",
+                    address: "410 Blvd. Zerktouni Res. Hamad, Appt. N1/C",
+                    geometry: { type: "Point", coordinates: [-7.5898, 33.5731] }
+                },
+                {
+                    id: "cairo",
+                    title: "Cairo, Egypt",
+                    address: "66 Hammouda Mahmoud Madinat Nasr",
+                    geometry: { type: "Point", coordinates: [31.2357, 30.0444] }
+                }
+            ];
+
+            // Secondary locations (All other offices)
+            var secondaryLocations = [
+                {
+                    id: "rabat",
+                    title: "Rabat, Morocco",
+                    address: "Regional Office",
+                    geometry: { type: "Point", coordinates: [-6.8416, 34.0209] }
+                },
+                {
+                    id: "marrakech",
+                    title: "Marrakech, Morocco",
+                    address: "Regional Office",
+                    geometry: { type: "Point", coordinates: [-8.0096, 31.6295] }
+                },
+                {
+                    id: "alexandria",
+                    title: "Alexandria, Egypt",
+                    address: "Regional Office",
+                    geometry: { type: "Point", coordinates: [29.9187, 31.2001] }
+                },
+                {
+                    id: "rotterdam",
+                    title: "Rotterdam, Netherlands",
+                    address: "Albert Plesmanweg 57A, 3088 GB",
+                    geometry: { type: "Point", coordinates: [4.2747, 51.9225] }
+                },
+                {
+                    id: "barcelona",
+                    title: "Barcelona, Spain (HQ)",
+                    address: "C/ Sardenya 49, 08005",
+                    geometry: { type: "Point", coordinates: [2.1734, 41.3851] }
+                },
+                {
+                    id: "london",
+                    title: "London, United Kingdom",
+                    address: "31 Homerton Rd, London E9 5QB",
+                    geometry: { type: "Point", coordinates: [-0.0757, 51.5574] }
+                },
+                {
+                    id: "leicester",
+                    title: "Leicester, United Kingdom",
+                    address: "Welland Rd, Oakham LE15 8JE",
+                    geometry: { type: "Point", coordinates: [-1.1405, 52.6369] }
+                },
+                {
+                    id: "tallinn",
+                    title: "Tallinn, Estonia (HQ)",
+                    address: "Sakala tn 7-2, 10141",
+                    geometry: { type: "Point", coordinates: [24.7536, 59.4370] }
+                }
+            ];
+
+            primarySeries.data.setAll(primaryLocations);
+            secondarySeries.data.setAll(secondaryLocations);
+
+            // Create connections from primary hubs to all other locations
+            var connectionFrom = [
+                { lat: 33.5731, lon: -7.5898 }, // Casablanca
+                { lat: 30.0444, lon: 31.2357 }  // Cairo
+            ];
+
+            var allSecondaryCoords = secondaryLocations.map(loc => ({
+                lat: loc.geometry.coordinates[1],
+                lon: loc.geometry.coordinates[0]
+            }));
+
+            // Create lines from each primary hub to all secondary locations
+            connectionFrom.forEach(primary => {
+                allSecondaryCoords.forEach(secondary => {
+                    lineSeries.pushDataItem({
+                        geometry: {
+                            type: "LineString",
+                            coordinates: [[primary.lon, primary.lat], [secondary.lon, secondary.lat]]
+                        }
+                    });
+                });
+            });
+
+            // Zoom to fit Morocco and Egypt
+            polygonSeries.events.on("datavalidated", function() {
+                chart.zoomToGeoPoint({ longitude: 10, latitude: 20 }, 3);
+            });
+
+            // Animate on load
+            chart.appear(1000, 100);
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                root.relayout();
+            });
+        });
+    </script>
+</body>
+</html>
