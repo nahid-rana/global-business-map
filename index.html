@@ -97,7 +97,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             z-index: 1000;
-            max-width: 280px;
+            max-width: 300px;
             border: 1px solid rgba(200, 200, 200, 0.3);
         }
 
@@ -138,6 +138,10 @@
 
         .legend-marker.secondary {
             background: #ffba00;
+        }
+
+        .legend-marker.comingsoon {
+            background: #a0a0a0;
         }
 
         .legend-line {
@@ -186,80 +190,7 @@
             font-weight: 600;
         }
 
-        /* Custom Popup Styling */
-        .leaflet-popup-content-wrapper {
-            background: white;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .leaflet-popup-content {
-            margin: 0;
-            padding: 12px;
-            font-size: 0.9rem;
-        }
-
-        .location-popup-title {
-            font-weight: 700;
-            color: #1e3c72;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-        }
-
-        .location-popup-address {
-            color: #555;
-            font-size: 0.8rem;
-            line-height: 1.5;
-            margin-bottom: 10px;
-            white-space: pre-line;
-        }
-
-        .location-popup-type {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .location-popup-type.primary {
-            background: #e63946;
-            color: white;
-        }
-
-        .location-popup-type.secondary {
-            background: #ffba00;
-            color: #000;
-        }
-
-        .leaflet-popup-close-button {
-            padding: 4px 8px;
-            font-size: 18px;
-        }
-
-        /* Disable zoom controls */
-        .leaflet-control-zoom {
-            display: none !important;
-        }
-
         /* Responsive */
-        @media (max-width: 1024px) {
-            .header h1 {
-                font-size: 1.8rem;
-            }
-
-            .legend {
-                max-width: 240px;
-                padding: 18px;
-            }
-
-            .info-panel {
-                max-width: 300px;
-            }
-        }
-
         @media (max-width: 768px) {
             .map-wrapper {
                 aspect-ratio: 4 / 3;
@@ -269,14 +200,10 @@
                 font-size: 1.4rem;
             }
 
-            .header p {
-                font-size: 0.9rem;
-            }
-
             .legend {
                 top: 15px;
                 right: 15px;
-                max-width: 220px;
+                max-width: 240px;
                 padding: 15px;
             }
 
@@ -286,16 +213,6 @@
                 max-width: 280px;
                 padding: 15px;
             }
-
-            .legend-title,
-            .info-panel h3 {
-                font-size: 0.8rem;
-            }
-
-            .legend-item,
-            .info-panel p {
-                font-size: 0.8rem;
-            }
         }
 
         @media (max-width: 480px) {
@@ -304,16 +221,8 @@
                 margin: 10px;
             }
 
-            .header {
-                padding: 20px 15px;
-            }
-
             .header h1 {
                 font-size: 1.1rem;
-            }
-
-            .header p {
-                font-size: 0.8rem;
             }
 
             .legend {
@@ -354,6 +263,10 @@
                         <span>Regional Office</span>
                     </div>
                     <div class="legend-item">
+                        <div class="legend-marker comingsoon"></div>
+                        <span>Coming Soon</span>
+                    </div>
+                    <div class="legend-item">
                         <div class="legend-line"></div>
                         <span>Connection Routes</span>
                     </div>
@@ -361,9 +274,10 @@
 
                 <div class="info-panel">
                     <h3>📍 Network Summary</h3>
-                    <p><strong>8 Global Offices</strong></p>
+                    <p><strong>9 Global Locations</strong></p>
                     <p><strong>2 Primary Hubs:</strong> Morocco & Egypt</p>
                     <p><strong>6 Regional Offices:</strong> Europe & North Africa</p>
+                    <p><strong>1 Coming Soon:</strong> USA</p>
                 </div>
             </div>
         </div>
@@ -372,8 +286,8 @@
     <script>
         // Initialize map
         const map = L.map('map', {
-            center: [25, 10],
-            zoom: 3.5,
+            center: [20, 0],
+            zoom: 2.8,
             dragging: true,
             scrollWheelZoom: false,
             zoomControl: false,
@@ -462,17 +376,30 @@
                     lng: 24.7536,
                     type: 'REGIONAL OFFICE'
                 }
+            ],
+            comingsoon: [
+                {
+                    name: 'New York City, USA',
+                    address: 'Coming Soon\nNew York City, USA',
+                    lat: 40.7128,
+                    lng: -74.0060,
+                    type: 'COMING SOON'
+                }
             ]
         };
 
         // Create custom icon
-        function createIcon(isPrimary) {
+        function createIcon(type) {
+            let bgColor = '#e63946'; // primary
+            if (type === 'REGIONAL OFFICE') bgColor = '#ffba00';
+            if (type === 'COMING SOON') bgColor = '#a0a0a0';
+
             return L.divIcon({
                 html: `
                     <div style="
                         width: 32px;
                         height: 32px;
-                        background: ${isPrimary ? '#e63946' : '#ffba00'};
+                        background: ${bgColor};
                         border: 3px solid white;
                         border-radius: 50%;
                         display: flex;
@@ -496,19 +423,31 @@
         function createPopup(location) {
             return `
                 <div style="width: 280px;">
-                    <div class="location-popup-title">${location.name}</div>
-                    <div class="location-popup-address">${location.address}</div>
-                    <span class="location-popup-type ${location.type === 'PRIMARY HUB' ? 'primary' : 'secondary'}">
+                    <div style="font-weight: 700; color: #1e3c72; margin-bottom: 8px; font-size: 0.95rem;">${location.name}</div>
+                    <div style="color: #555; font-size: 0.8rem; line-height: 1.5; margin-bottom: 10px; white-space: pre-line;">${location.address}</div>
+                    <span style="
+                        display: inline-block;
+                        padding: 4px 10px;
+                        border-radius: 4px;
+                        font-size: 0.7rem;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        background: ${location.type === 'PRIMARY HUB' ? '#e63946' : location.type === 'COMING SOON' ? '#a0a0a0' : '#ffba00'};
+                        color: ${location.type === 'COMING SOON' ? 'white' : location.type === 'PRIMARY HUB' ? 'white' : '#000'};
+                    ">
                         ${location.type}
                     </span>
                 </div>
             `;
         }
 
-        // Add primary hub markers
-        locations.primary.forEach(location => {
+        // Combine all locations
+        const allLocations = [...locations.primary, ...locations.secondary, ...locations.comingsoon];
+        
+        // Add all markers
+        allLocations.forEach(location => {
             const marker = L.marker([location.lat, location.lng], {
-                icon: createIcon(true),
+                icon: createIcon(location.type),
                 title: location.name
             }).addTo(map);
 
@@ -521,50 +460,66 @@
             marker.on('mouseout', function() { this.closePopup(); });
         });
 
-        // Add secondary office markers
-        locations.secondary.forEach(location => {
-            const marker = L.marker([location.lat, location.lng], {
-                icon: createIcon(false),
-                title: location.name
-            }).addTo(map);
-
-            marker.bindPopup(createPopup(location), {
-                maxWidth: 300,
-                minWidth: 250
+        // Draw curved lines connecting ALL locations to each other
+        // Connect all primary hubs to all secondary offices
+        locations.primary.forEach(primary => {
+            locations.secondary.forEach(secondary => {
+                L.curve([
+                    [primary.lat, primary.lng],
+                    [secondary.lat, secondary.lng]
+                ], {
+                    color: '#ff9500',
+                    weight: 2.5,
+                    opacity: 0.5,
+                    dashArray: '5, 5'
+                }).addTo(map);
             });
 
-            marker.on('mouseover', function() { this.openPopup(); });
-            marker.on('mouseout', function() { this.closePopup(); });
+            // Connect primary hubs to coming soon
+            locations.comingsoon.forEach(comingSoon => {
+                L.curve([
+                    [primary.lat, primary.lng],
+                    [comingSoon.lat, comingSoon.lng]
+                ], {
+                    color: '#ff9500',
+                    weight: 2.5,
+                    opacity: 0.5,
+                    dashArray: '5, 5'
+                }).addTo(map);
+            });
         });
 
-        // Draw connection lines
-        // From Casablanca
-        locations.secondary.forEach(office => {
-            L.curve([
-                [33.5731, -7.5898],
-                [office.lat, office.lng]
-            ], {
-                color: '#ff9500',
-                weight: 2.5,
-                opacity: 0.5,
-                dashArray: '5, 5'
-            }).addTo(map);
+        // Connect all secondary offices to each other
+        for (let i = 0; i < locations.secondary.length; i++) {
+            for (let j = i + 1; j < locations.secondary.length; j++) {
+                L.curve([
+                    [locations.secondary[i].lat, locations.secondary[i].lng],
+                    [locations.secondary[j].lat, locations.secondary[j].lng]
+                ], {
+                    color: '#ff9500',
+                    weight: 2,
+                    opacity: 0.3,
+                    dashArray: '5, 5'
+                }).addTo(map);
+            }
+        }
+
+        // Connect secondary offices to coming soon
+        locations.secondary.forEach(secondary => {
+            locations.comingsoon.forEach(comingSoon => {
+                L.curve([
+                    [secondary.lat, secondary.lng],
+                    [comingSoon.lat, comingSoon.lng]
+                ], {
+                    color: '#ff9500',
+                    weight: 2.5,
+                    opacity: 0.5,
+                    dashArray: '5, 5'
+                }).addTo(map);
+            });
         });
 
-        // From Cairo
-        locations.secondary.forEach(office => {
-            L.curve([
-                [30.0444, 31.2357],
-                [office.lat, office.lng]
-            ], {
-                color: '#ff9500',
-                weight: 2.5,
-                opacity: 0.5,
-                dashArray: '5, 5'
-            }).addTo(map);
-        });
-
-        // Between primary hubs
+        // Connect primary hubs to each other
         L.curve([
             [33.5731, -7.5898],
             [30.0444, 31.2357]
@@ -576,11 +531,10 @@
         }).addTo(map);
 
         // Auto fit map bounds
-        const bounds = L.latLngBounds([
-            ...locations.primary.map(l => [l.lat, l.lng]),
-            ...locations.secondary.map(l => [l.lat, l.lng])
-        ]);
-        map.fitBounds(bounds, { padding: [80, 80], maxZoom: 4 });
+        const bounds = L.latLngBounds(
+            allLocations.map(l => [l.lat, l.lng])
+        );
+        map.fitBounds(bounds, { padding: [100, 100], maxZoom: 3 });
     </script>
 </body>
 </html>
